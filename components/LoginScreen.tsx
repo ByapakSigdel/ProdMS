@@ -1,54 +1,131 @@
 import React, { useState } from 'react';
 import {
-    Alert,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { supabase } from '../lib/supabase'; // Import your supabase client
 
 interface LoginScreenProps {
   onLogin: () => void;
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // Static credentials (replace with backend later)
-  const STATIC_USERNAME = 'admin';
-  const STATIC_PASSWORD = 'password123';
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
 
-  const handleLogin = () => {
-    if (username === STATIC_USERNAME && password === STATIC_PASSWORD) {
-      onLogin();
-    } else {
-      Alert.alert('Error', 'Invalid username or password');
+    if (!isValidEmail(email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password: password,
+      });
+
+      if (error) {
+        Alert.alert('Login Failed', error.message);
+        return;
+      }
+
+      if (data.user) {
+        onLogin();
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+      console.error('Login error:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleSignUp = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters long');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password: password,
+      });
+
+      if (error) {
+        Alert.alert('Sign Up Failed', error.message);
+        return;
+      }
+
+      if (data.user) {
+        Alert.alert(
+          'Success', 
+          'Account created successfully! Please check your email for verification.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+      console.error('Sign up error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   return (
-    <KeyboardAvoidingView 
-      style={styles.container} 
+    <KeyboardAvoidingView
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.loginContainer}>
         <Text style={styles.title}>Welcome Back</Text>
         <Text style={styles.subtitle}>Please sign in to continue</Text>
-        
+       
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
-            placeholder="Username"
-            value={username}
-            onChangeText={setUsername}
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
             autoCapitalize="none"
             autoCorrect={false}
+            keyboardType="email-address"
+            editable={!loading}
           />
-          
+         
           <TextInput
             style={styles.input}
             placeholder="Password"
@@ -57,18 +134,31 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             secureTextEntry
             autoCapitalize="none"
             autoCorrect={false}
+            editable={!loading}
           />
         </View>
-        
-        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-          <Text style={styles.loginButtonText}>Sign In</Text>
+       
+        <TouchableOpacity 
+          style={[styles.loginButton, loading && styles.disabledButton]} 
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text style={styles.loginButtonText}>Sign In</Text>
+          )}
         </TouchableOpacity>
-        
-        <View style={styles.credentialsHint}>
-          <Text style={styles.hintText}>Demo Credentials:</Text>
-          <Text style={styles.hintText}>Username: admin</Text>
-          <Text style={styles.hintText}>Password: password123</Text>
-        </View>
+
+        <TouchableOpacity 
+          style={[styles.signUpButton, loading && styles.disabledButton]} 
+          onPress={handleSignUp}
+          disabled={loading}
+        >
+          <Text style={styles.signUpButtonText}>
+            Don't have an account? Sign Up
+          </Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
@@ -124,23 +214,30 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 15,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 15,
+    minHeight: 50,
+    justifyContent: 'center',
   },
   loginButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   },
-  credentialsHint: {
-    backgroundColor: '#f0f0f0',
-    padding: 15,
+  signUpButton: {
+    backgroundColor: 'transparent',
     borderRadius: 8,
+    padding: 15,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#007AFF',
   },
-  hintText: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 2,
+  signUpButtonText: {
+    color: '#007AFF',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
 });
 
