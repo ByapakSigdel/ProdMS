@@ -4,7 +4,6 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -107,17 +106,22 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      className="flex-1 bg-gray-50 justify-center"
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={styles.loginContainer}>
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Please sign in to continue</Text>
+      <View className="mx-8 p-6 bg-white rounded-xl shadow-lg">
+        <Text className="text-3xl font-bold text-center mb-2 text-gray-800">
+          Welcome Back
+        </Text>
+        <Text className="text-base text-center mb-8 text-gray-600">
+          Please sign in to continue
+        </Text>
        
-        <View style={styles.inputContainer}>
+        <View className="mb-5">
           <TextInput
-            style={styles.input}
+            className="border border-gray-300 rounded-lg p-4 mb-4 text-base bg-gray-50"
             placeholder="Email"
+            placeholderTextColor="#9CA3AF"
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -127,8 +131,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
           />
          
           <TextInput
-            style={styles.input}
+            className="border border-gray-300 rounded-lg p-4 mb-4 text-base bg-gray-50"
             placeholder="Password"
+            placeholderTextColor="#9CA3AF"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -139,23 +144,23 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
         </View>
        
         <TouchableOpacity 
-          style={[styles.loginButton, loading && styles.disabledButton]} 
+          className={`bg-blue-500 rounded-lg p-4 items-center mb-4 min-h-[50px] justify-center ${loading ? 'opacity-60' : ''}`}
           onPress={handleLogin}
           disabled={loading}
         >
           {loading ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text style={styles.loginButtonText}>Sign In</Text>
+            <Text className="text-white text-base font-bold">Sign In</Text>
           )}
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={[styles.signUpButton, loading && styles.disabledButton]} 
+          className={`bg-transparent rounded-lg p-4 items-center border border-blue-500 ${loading ? 'opacity-60' : ''}`}
           onPress={handleSignUp}
           disabled={loading}
         >
-          <Text style={styles.signUpButtonText}>
+          <Text className="text-blue-500 text-sm font-medium">
             Don't have an account? Sign Up
           </Text>
         </TouchableOpacity>
@@ -163,82 +168,5 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
     </KeyboardAvoidingView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    justifyContent: 'center',
-  },
-  loginContainer: {
-    marginHorizontal: 30,
-    padding: 20,
-    backgroundColor: 'white',
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-    color: '#333',
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 30,
-    color: '#666',
-  },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 15,
-    fontSize: 16,
-    backgroundColor: '#f9f9f9',
-  },
-  loginButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
-    padding: 15,
-    alignItems: 'center',
-    marginBottom: 15,
-    minHeight: 50,
-    justifyContent: 'center',
-  },
-  loginButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  signUpButton: {
-    backgroundColor: 'transparent',
-    borderRadius: 8,
-    padding: 15,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#007AFF',
-  },
-  signUpButtonText: {
-    color: '#007AFF',
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
-});
 
 export default LoginScreen;
